@@ -3,7 +3,7 @@ from database.db import get_connection
 def add_material(name, unit):
     conn = get_connection()
     c = conn.cursor()
-    c.execute("INSERT OR IGNORE INTO materials (name, unit) VALUES (?, ?)", (name.strip().lower(), unit))
+    c.execute("INSERT OR IGNORE INTO materials (name, unit) VALUES (%s, %s)", (name.strip().lower(), unit))
     conn.commit()
     conn.close()
 
@@ -18,7 +18,7 @@ def get_materials():
 def log_transaction(item, qty, ttype):
     conn = get_connection()
     c = conn.cursor()
-    c.execute("INSERT INTO transactions (item_name, quantity, type) VALUES (?, ?, ?)", (item, qty, ttype))
+    c.execute("INSERT INTO transactions (item_name, quantity, type) VALUES (%s, %s, %s)", (item, qty, ttype))
     conn.commit()
     conn.close()
 

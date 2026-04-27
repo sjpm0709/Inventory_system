@@ -7,6 +7,18 @@ def add_material(name, unit):
     conn.commit()
     conn.close()
 
+def add_transaction(item_name, type, quantity):
+    conn = get_connection()
+    c = conn.cursor()
+
+    c.execute(
+        "INSERT INTO transactions (item_name, type, quantity) VALUES (%s, %s, %s)",
+        (item_name, type, quantity)
+    )
+
+    conn.commit()
+    conn.close()
+
 def get_materials():
     conn = get_connection()
     c = conn.cursor()

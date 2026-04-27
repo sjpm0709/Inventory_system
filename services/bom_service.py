@@ -8,7 +8,7 @@ def save_bom(product_id, material_id, qty):
 
     c.execute("""
         INSERT INTO bom (product_id, material_id, quantity)
-        VALUES (?, ?, ?)
+        VALUES (%s, %s, %s)
     """, (product_id, material_id, qty))
 
     conn.commit()

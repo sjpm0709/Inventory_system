@@ -1,42 +1,13 @@
-from services.inventory import update_stock, get_stock
-from services.bom import get_bom
-from database.db import get_connection
-from datetime import datetime
+from services.inventory_service import log_transaction
+from services.bom_service import get_bom
 
 def produce(sku, qty):
+    bom = get_bom(sku)
 
-    materials = get_bom(sku)
-    if not materials:
-        raise Exception("Invalid SKU or BOM missing")
+    if not bom:
+        raise Exception("BOM not defined")
 
-    stock = get_stock()
+    for material, per_unit in bom:
+        log_transaction(material, per_unit * qty, "OUT")
 
-    # Validate
-    for m, q in materials:
-        if stock.get(m, 0) < q * qty:
-            raise Exception(f"Insufficient stock: {m}")
-
-    # Deduct
-    for m, q in materials:
-        update_stock(m, q * qty, "OUT")
-
-    # Add product
-    update_stock(sku, qty, "IN")
-
-    # Log
-    conn = get_connection()
-    c = conn.cursor()
-
-    for m, q in materials:
-        c.execute(
-            "INSERT INTO transactions VALUES (NULL, ?, ?, ?, ?, ?)",
-            (datetime.now(), m, "OUT", q * qty, "production")
-        )
-
-    c.execute(
-        "INSERT INTO transactions VALUES (NULL, ?, ?, ?, ?, ?)",
-        (datetime.now(), sku, "IN", qty, "production")
-    )
-
-    conn.commit()
-    conn.close()
+    log_transaction(sku, qty, "IN")

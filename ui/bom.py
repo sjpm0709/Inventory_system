@@ -12,7 +12,7 @@ def show_bom():
     selected_product = st.selectbox("Select Product", list(product_dict.keys()))
 
     materials = get_materials()
-    material_dict = {name: id for id, name in materials}
+    material_dict = {name: id for id, name, unit in materials}
 
     selected_material = st.selectbox("Material", list(material_dict.keys()))
     qty = st.number_input("Quantity per product", min_value=0.0)

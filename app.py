@@ -63,3 +63,29 @@ elif menu == "BOM":
 
 elif menu == "Production":
     show_production()
+import streamlit as st
+import psycopg2
+
+st.title("DB Connection Test")
+
+try:
+    conn = psycopg2.connect(
+        host=st.secrets["DB_HOST"],
+        database=st.secrets["DB_NAME"],
+        user=st.secrets["DB_USER"],
+        password=st.secrets["DB_PASSWORD"],
+        port=st.secrets["DB_PORT"],
+        sslmode="require",
+        connect_timeout=10
+    )
+    
+    st.success("✅ Connected to Supabase successfully")
+
+    cur = conn.cursor()
+    cur.execute("SELECT 1;")
+    result = cur.fetchone()
+    
+    st.write("Test query result:", result)
+
+except Exception as e:
+    st.error(f"❌ ERROR: {e}")

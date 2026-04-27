@@ -9,7 +9,7 @@ from ui.stock import show_stock
 from ui.dashboard import show_dashboard
 from ui.products import show_products
 from ui.bom import show_bom
-from ui.production_ui import show_production
+from ui.production import show_production
 
 
 # -----------------------------

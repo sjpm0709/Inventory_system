@@ -5,7 +5,7 @@ from database.db import init_db
 
 # UI imports
 from ui.materials import show_materials
-from ui.stock import show_stock
+from ui.stock import show_stock_entry
 from ui.dashboard import show_dashboard
 from ui.products import show_products
 from ui.bom import show_bom
@@ -53,7 +53,7 @@ elif menu == "Materials":
     show_materials()
 
 elif menu == "Stock Entry":
-    show_stock()
+    show_stock_entry()
 
 elif menu == "Products":
     show_products()

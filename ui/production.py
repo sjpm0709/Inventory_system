@@ -1,6 +1,6 @@
 import streamlit as st
 from services.product_service import get_products
-from services.production_service import produce
+from services.inventory_service import produce
 
 def show_production():
     st.header("Production")

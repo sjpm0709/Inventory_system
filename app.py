@@ -1,20 +1,51 @@
 import streamlit as st
+import os
+
 from database.db import init_db
 
+# UI imports
 from ui.materials import show_materials
 from ui.stock import show_stock
 from ui.dashboard import show_dashboard
+from ui.products import show_products
+from ui.bom import show_bom
+from ui.production_ui import show_production
 
-init_db()
+
+# -----------------------------
+# DB INIT (safe for cloud)
+# -----------------------------
+if not os.path.exists("inventory_v2.db"):
+    init_db()
+
+
+# -----------------------------
+# APP UI
+# -----------------------------
+st.set_page_config(page_title="Inventory System", layout="wide")
 
 st.title("Inventory & Production System")
 
-menu = st.sidebar.selectbox("Menu", [
-    "Dashboard",
-    "Materials",
-    "Stock Entry"
-])
 
+# -----------------------------
+# SIDEBAR MENU
+# -----------------------------
+menu = st.sidebar.selectbox(
+    "Menu",
+    [
+        "Dashboard",
+        "Materials",
+        "Stock Entry",
+        "Products",
+        "BOM",
+        "Production"
+    ]
+)
+
+
+# -----------------------------
+# ROUTING
+# -----------------------------
 if menu == "Dashboard":
     show_dashboard()
 
@@ -23,3 +54,12 @@ elif menu == "Materials":
 
 elif menu == "Stock Entry":
     show_stock()
+
+elif menu == "Products":
+    show_products()
+
+elif menu == "BOM":
+    show_bom()
+
+elif menu == "Production":
+    show_production()

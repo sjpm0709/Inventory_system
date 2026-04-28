@@ -5,17 +5,22 @@ from database.db import get_connection
 # MATERIALS
 # ---------------------------
 
-def add_material(name, unit):
+def add_material(name, unit, min_stock):
     conn = get_connection()
     c = conn.cursor()
 
+    name = name.strip().lower()
+
     c.execute(
         """
-        INSERT INTO materials (name, unit)
-        VALUES (%s, %s)
-        ON CONFLICT (name) DO NOTHING
+        INSERT INTO materials (name, unit, min_stock)
+        VALUES (%s, %s, %s)
+        ON CONFLICT (name)
+        DO UPDATE SET
+            unit = EXCLUDED.unit,
+            min_stock = EXCLUDED.min_stock
         """,
-        (name.strip().lower(), unit)
+        (name, unit, min_stock)
     )
 
     conn.commit()

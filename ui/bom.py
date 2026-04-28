@@ -7,7 +7,7 @@ def show_bom():
     st.header("BOM Management")
 
     products = get_products()
-    product_dict = {sku: id for id, sku in products}
+    product_dict = {sku: id for id, sku, name in products}
 
     selected_product = st.selectbox("Select Product", list(product_dict.keys()))
 

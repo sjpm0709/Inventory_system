@@ -2,25 +2,20 @@ from database.db import get_connection
 
 
 def save_bom(product_id, material_data):
-    """
-    material_data = [(material_id, qty), ...]
-    """
-
     conn = get_connection()
     c = conn.cursor()
 
-    # Delete old BOM
     c.execute("DELETE FROM bom WHERE product_id = %s", (product_id,))
 
-    # Insert new BOM (multiple materials)
     for material_id, qty in material_data:
-        c.execute(
-            """
-            INSERT INTO bom (product_id, material_id, quantity)
-            VALUES (%s, %s, %s)
-            """,
-            (product_id, material_id, qty)
-        )
+        if qty and float(qty) > 0:
+            c.execute(
+                """
+                INSERT INTO bom (product_id, material_id, quantity)
+                VALUES (%s, %s, %s)
+                """,
+                (product_id, material_id, qty)
+            )
 
     conn.commit()
     conn.close()
@@ -32,9 +27,9 @@ def get_bom(product_id):
 
     c.execute(
         """
-        SELECT m.name, b.quantity
+        SELECT m.id, m.name, b.quantity
         FROM bom b
-        JOIN materials m ON m.id = b.material_id
+        JOIN materials m ON b.material_id = m.id
         WHERE b.product_id = %s
         """,
         (product_id,)

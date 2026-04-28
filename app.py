@@ -25,7 +25,7 @@ if not os.path.exists("inventory_v2.db"):
 # -----------------------------
 st.set_page_config(page_title="Inventory System", layout="wide")
 
-st.title("Inventory & Production System")
+st.title("Haydn Inventory Management")
 
 
 # -----------------------------

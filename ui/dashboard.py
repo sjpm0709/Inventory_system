@@ -27,7 +27,54 @@ def show_dashboard():
     st.divider()
 
     # ---------------------------
-    # ANALYTICS SECTION
+    # RAW MATERIAL TABLE
+    # ---------------------------
+    st.subheader("📦 Raw Material Stock")
+
+    if raw_materials:
+        raw_df = pd.DataFrame(
+            [{"Material": k, "Stock": v} for k, v in raw_materials.items()]
+        )
+        st.dataframe(raw_df, use_container_width=True)
+    else:
+        st.info("No raw material stock")
+
+    # ---------------------------
+    # FINISHED GOODS TABLE
+    # ---------------------------
+    st.subheader("🏷 Finished Goods Stock")
+
+    if finished_goods:
+        fg_df = pd.DataFrame(
+            [{"SKU": k, "Stock": v} for k, v in finished_goods.items()]
+        )
+        st.dataframe(fg_df, use_container_width=True)
+    else:
+        st.info("No finished goods stock")
+
+    # ---------------------------
+    # LOW STOCK ALERTS
+    # ---------------------------
+    st.subheader("⚠ Low Stock Alerts")
+
+    low_stock_found = False
+
+    material_map = {m[1]: m[3] for m in materials}  # name → min_stock
+
+    for name, stock in raw_materials.items():
+        min_stock = material_map.get(name, 0)
+
+        if stock < min_stock:
+            st.warning(f"{name} is low: {stock} (Min: {min_stock})")
+            low_stock_found = True
+
+    if not low_stock_found:
+        st.success("All materials are sufficiently stocked")
+
+    st.divider()
+
+    # ---------------------------
+    # ANALYTICS
     # ---------------------------
     st.subheader("📊 Weekly Analytics")
 
@@ -39,7 +86,6 @@ def show_dashboard():
 
         st.markdown("### Raw Material Usage")
         st.line_chart(df.set_index("week"))
-
     else:
         st.info("No usage data")
 
@@ -51,7 +97,6 @@ def show_dashboard():
 
         st.markdown("### Production")
         st.line_chart(df.set_index("week"))
-
     else:
         st.info("No production data")
 
@@ -63,6 +108,5 @@ def show_dashboard():
 
         st.markdown("### Dispatch")
         st.line_chart(df.set_index("week"))
-
     else:
         st.info("No dispatch data")

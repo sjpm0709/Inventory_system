@@ -28,14 +28,8 @@ def get_products():
     conn = get_connection()
     c = conn.cursor()
 
-    c.execute(
-        """
-        SELECT id, sku, name
-        FROM products
-        ORDER BY sku
-        """
-    )
-
+    c.execute("SELECT id, sku, name FROM products ORDER BY sku")
     data = c.fetchall()
+
     conn.close()
     return data

@@ -31,7 +31,7 @@ def get_materials():
     conn = get_connection()
     c = conn.cursor()
 
-    c.execute("SELECT id, name, unit FROM materials ORDER BY name")
+    c.execute("SELECT id, name, unit, min_stock FROM materials ORDER BY name")
     data = c.fetchall()
 
     conn.close()

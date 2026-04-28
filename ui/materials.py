@@ -1,5 +1,5 @@
 import streamlit as st
-from services.inventory_service import add_material, get_materials
+from services.inventory_service import add_material, get_materials, delete_material
 
 
 def show_materials():

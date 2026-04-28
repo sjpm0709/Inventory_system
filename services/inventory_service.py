@@ -230,18 +230,33 @@ def produce(product_id, quantity):
         raise Exception("Insufficient stock:\n" + "\n".join(shortages))
 
     # ---------------------------
-    # STEP 4: Deduct materials
-    # ---------------------------
-    for material_name, per_unit_qty in bom_items:
-        total_required = float(per_unit_qty) * float(quantity)
+# STEP 4: Deduct materials
+# ---------------------------
+for material_name, per_unit_qty in bom_items:
+    total_required = float(per_unit_qty) * float(quantity)
 
-        c.execute(
-            """
-            INSERT INTO transactions (item_name, type, quantity)
-            VALUES (%s, 'OUT', %s)
-            """,
-            (material_name, total_required)
-        )
+    c.execute(
+        """
+        INSERT INTO transactions (item_name, type, quantity)
+        VALUES (%s, 'OUT', %s)
+        """,
+        (material_name, total_required)
+    )
 
-    conn.commit()
-    conn.close()
+# ---------------------------
+# STEP 5: Add finished goods
+# ---------------------------
+c.execute(
+    "SELECT sku FROM products WHERE id = %s",
+    (product_id,)
+)
+
+sku = c.fetchone()[0]
+
+c.execute(
+    """
+    INSERT INTO transactions (item_name, type, quantity)
+    VALUES (%s, 'IN', %s)
+    """,
+    (sku, quantity)
+)

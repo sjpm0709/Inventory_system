@@ -257,3 +257,18 @@ def produce(product_id, quantity):
 
     conn.commit()
     conn.close()
+
+def delete_material(material_id):
+    conn = get_connection()
+    c = conn.cursor()
+
+    # Check if used in BOM
+    c.execute("SELECT 1 FROM bom WHERE material_id = %s LIMIT 1", (material_id,))
+    if c.fetchone():
+        conn.close()
+        raise Exception("Material is used in BOM. Cannot delete.")
+
+    c.execute("DELETE FROM materials WHERE id = %s", (material_id,))
+
+    conn.commit()
+    conn.close()

@@ -29,17 +29,29 @@ def show_dashboard():
     total_dispatched = sum([row[2] for row in dispatch_data]) if dispatch_data else 0
 
     # ---------------------------
-    # KPIs (UPDATED)
+    # KPI ROW 1 (COUNTS)
     # ---------------------------
+    raw_material_count = len(raw_materials)
+    finished_sku_count = len(finished_goods)
+
     col1, col2, col3 = st.columns(3)
 
-    col1.metric("Raw Material Units", round(total_raw_units, 2))
-    col2.metric("Finished Goods (In Stock)", round(total_finished_stock, 2))
+    col1.metric("Material Types", raw_material_count)
+    col2.metric("Product SKUs", finished_sku_count)
     col3.metric("Total Dispatched", round(total_dispatched, 2))
 
-    # second row
-    st.metric("Total Produced", round(total_produced, 2))
 
+    # ---------------------------
+    # KPI ROW 2 (QUANTITIES)
+    # ---------------------------
+    total_raw_units = sum(raw_materials.values())
+    total_finished_stock = sum(finished_goods.values())
+
+    col4, col5, col6 = st.columns(3)
+
+    col4.metric("Raw Material Units", round(total_raw_units, 2))
+    col5.metric("Finished Stock Units", round(total_finished_stock, 2))
+    col6.metric("Total Produced", round(total_produced, 2))
     st.divider()
 
     # ---------------------------

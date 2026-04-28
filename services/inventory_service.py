@@ -169,7 +169,9 @@ def produce(product_id, quantity):
     conn = get_connection()
     c = conn.cursor()
 
-    # get BOM
+    # ---------------------------
+    # STEP 1: Get BOM
+    # ---------------------------
     c.execute(
         """
         SELECT m.name, b.quantity
@@ -186,7 +188,50 @@ def produce(product_id, quantity):
         conn.close()
         raise Exception("No BOM defined for this product")
 
-    # deduct materials
+    # ---------------------------
+    # STEP 2: Get current stock
+    # ---------------------------
+    c.execute(
+        """
+        SELECT item_name, type, quantity
+        FROM transactions
+        """
+    )
+
+    rows = c.fetchall()
+
+    stock = {}
+
+    for item_name, txn_type, qty in rows:
+        if item_name not in stock:
+            stock[item_name] = 0
+
+        if txn_type == "IN":
+            stock[item_name] += float(qty)
+        else:
+            stock[item_name] -= float(qty)
+
+    # ---------------------------
+    # STEP 3: Validate stock
+    # ---------------------------
+    shortages = []
+
+    for material_name, per_unit_qty in bom_items:
+        required = float(per_unit_qty) * float(quantity)
+        available = stock.get(material_name, 0)
+
+        if available < required:
+            shortages.append(
+                f"{material_name} (Required: {required}, Available: {available})"
+            )
+
+    if shortages:
+        conn.close()
+        raise Exception("Insufficient stock:\n" + "\n".join(shortages))
+
+    # ---------------------------
+    # STEP 4: Deduct materials
+    # ---------------------------
     for material_name, per_unit_qty in bom_items:
         total_required = float(per_unit_qty) * float(quantity)
 

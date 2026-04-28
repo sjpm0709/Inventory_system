@@ -41,7 +41,6 @@ def add_transaction(item_name, txn_type, quantity):
     conn = get_connection()
     c = conn.cursor()
 
-    # normalize
     item_name = item_name.strip().lower()
 
     c.execute(
@@ -80,10 +79,16 @@ def get_stock():
 
 
 # ---------------------------
-# PRODUCTS (SKU)
+# PRODUCTS
 # ---------------------------
 
-def add_product(sku, name):
+def add_product(sku, name=""):
+    if not sku or not sku.strip():
+        raise ValueError("SKU cannot be empty")
+
+    sku = sku.strip().upper()
+    name = name.strip() if name else ""
+
     conn = get_connection()
     c = conn.cursor()
 
@@ -93,7 +98,7 @@ def add_product(sku, name):
         VALUES (%s, %s)
         ON CONFLICT (sku) DO NOTHING
         """,
-        (sku.strip().upper(), name.strip())
+        (sku, name)
     )
 
     conn.commit()
@@ -112,22 +117,15 @@ def get_products():
 
 
 # ---------------------------
-# BOM (Bill of Materials)
+# BOM
 # ---------------------------
 
 def save_bom(product_id, material_data):
-    """
-    material_data = list of tuples:
-    [(material_id, qty), ...]
-    """
-
     conn = get_connection()
     c = conn.cursor()
 
-    # remove old BOM
     c.execute("DELETE FROM bom WHERE product_id = %s", (product_id,))
 
-    # insert new
     for material_id, qty in material_data:
         if qty and float(qty) > 0:
             c.execute(
@@ -162,16 +160,14 @@ def get_bom(product_id):
 
 
 # ---------------------------
-# PRODUCTION
+# PRODUCTION (SAFE + COMPLETE)
 # ---------------------------
 
 def produce(product_id, quantity):
     conn = get_connection()
     c = conn.cursor()
 
-    # ---------------------------
     # STEP 1: Get BOM
-    # ---------------------------
     c.execute(
         """
         SELECT m.name, b.quantity
@@ -188,16 +184,8 @@ def produce(product_id, quantity):
         conn.close()
         raise Exception("No BOM defined for this product")
 
-    # ---------------------------
     # STEP 2: Get current stock
-    # ---------------------------
-    c.execute(
-        """
-        SELECT item_name, type, quantity
-        FROM transactions
-        """
-    )
-
+    c.execute("SELECT item_name, type, quantity FROM transactions")
     rows = c.fetchall()
 
     stock = {}
@@ -211,9 +199,7 @@ def produce(product_id, quantity):
         else:
             stock[item_name] -= float(qty)
 
-    # ---------------------------
     # STEP 3: Validate stock
-    # ---------------------------
     shortages = []
 
     for material_name, per_unit_qty in bom_items:
@@ -229,34 +215,29 @@ def produce(product_id, quantity):
         conn.close()
         raise Exception("Insufficient stock:\n" + "\n".join(shortages))
 
-    # ---------------------------
-# STEP 4: Deduct materials
-# ---------------------------
-for material_name, per_unit_qty in bom_items:
-    total_required = float(per_unit_qty) * float(quantity)
+    # STEP 4: Deduct materials
+    for material_name, per_unit_qty in bom_items:
+        total_required = float(per_unit_qty) * float(quantity)
+
+        c.execute(
+            """
+            INSERT INTO transactions (item_name, type, quantity)
+            VALUES (%s, 'OUT', %s)
+            """,
+            (material_name, total_required)
+        )
+
+    # STEP 5: Add finished goods
+    c.execute("SELECT sku FROM products WHERE id = %s", (product_id,))
+    sku = c.fetchone()[0]
 
     c.execute(
         """
         INSERT INTO transactions (item_name, type, quantity)
-        VALUES (%s, 'OUT', %s)
+        VALUES (%s, 'IN', %s)
         """,
-        (material_name, total_required)
+        (sku, quantity)
     )
 
-# ---------------------------
-# STEP 5: Add finished goods
-# ---------------------------
-c.execute(
-    "SELECT sku FROM products WHERE id = %s",
-    (product_id,)
-)
-
-sku = c.fetchone()[0]
-
-c.execute(
-    """
-    INSERT INTO transactions (item_name, type, quantity)
-    VALUES (%s, 'IN', %s)
-    """,
-    (sku, quantity)
-)
+    conn.commit()
+    conn.close()

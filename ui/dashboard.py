@@ -49,7 +49,7 @@ def show_dashboard():
 
     col4, col5, col6 = st.columns(3)
 
-    col4.metric("Raw Material Units", round(total_raw_units, 2))
+    
     col5.metric("Finished Stock Units", round(total_finished_stock, 2))
     col6.metric("Total Produced", round(total_produced, 2))
     st.divider()

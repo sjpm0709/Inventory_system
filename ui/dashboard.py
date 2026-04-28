@@ -10,7 +10,7 @@ from services.analytics_service import (
 
 
 def show_dashboard():
-    st.title("Haydn Inventory Management")
+    st.title("Dashboard")
 
     raw_materials, finished_goods = get_stock()
     materials = get_materials()

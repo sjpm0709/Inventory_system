@@ -22,4 +22,5 @@ def show_materials():
 
     for m in materials:
         # m = (id, name, unit, min_stock)
-        st.write(f"{m[1]} ({m[2]}) → Min Stock: {m[3]}")
+        min_stock = m[3] if len(m) > 3 else 50
+        st.write(f"{m[1]} ({m[2]}) → Min Stock: {min_stock}")

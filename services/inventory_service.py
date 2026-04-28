@@ -59,24 +59,35 @@ def get_stock():
     conn = get_connection()
     c = conn.cursor()
 
+    # Get all transactions
     c.execute("SELECT item_name, type, quantity FROM transactions")
     rows = c.fetchall()
 
+    # Get all product SKUs
+    c.execute("SELECT sku FROM products")
+    product_rows = c.fetchall()
+
     conn.close()
 
-    stock = {}
+    product_skus = set([p[0] for p in product_rows])
+
+    raw_materials = {}
+    finished_goods = {}
 
     for item_name, txn_type, qty in rows:
-        if item_name not in stock:
-            stock[item_name] = 0
+        qty = float(qty)
+
+        target = finished_goods if item_name in product_skus else raw_materials
+
+        if item_name not in target:
+            target[item_name] = 0
 
         if txn_type == "IN":
-            stock[item_name] += float(qty)
+            target[item_name] += qty
         else:
-            stock[item_name] -= float(qty)
+            target[item_name] -= qty
 
-    return stock
-
+    return raw_materials, finished_goods
 
 # ---------------------------
 # PRODUCTS

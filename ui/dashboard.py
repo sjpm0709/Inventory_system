@@ -16,13 +16,29 @@ def show_dashboard():
     materials = get_materials()
 
     # ---------------------------
-    # KPIs
+    # KPI CALCULATIONS
+    # ---------------------------
+    total_raw_units = sum(raw_materials.values())
+    total_finished_stock = sum(finished_goods.values())
+
+    # analytics totals
+    production_data = get_weekly_production()
+    dispatch_data = get_weekly_dispatch()
+
+    total_produced = sum([row[2] for row in production_data]) if production_data else 0
+    total_dispatched = sum([row[2] for row in dispatch_data]) if dispatch_data else 0
+
+    # ---------------------------
+    # KPIs (UPDATED)
     # ---------------------------
     col1, col2, col3 = st.columns(3)
 
-    col1.metric("Raw Materials", len(raw_materials))
-    col2.metric("Finished Products", len(finished_goods))
-    col3.metric("Total Items", len(raw_materials) + len(finished_goods))
+    col1.metric("Raw Material Units", round(total_raw_units, 2))
+    col2.metric("Finished Goods (In Stock)", round(total_finished_stock, 2))
+    col3.metric("Total Dispatched", round(total_dispatched, 2))
+
+    # second row
+    st.metric("Total Produced", round(total_produced, 2))
 
     st.divider()
 
@@ -57,18 +73,17 @@ def show_dashboard():
     # ---------------------------
     st.subheader("⚠ Low Stock Alerts")
 
-    low_stock_found = False
-
     material_map = {m[1]: m[3] for m in materials}  # name → min_stock
+    low_found = False
 
     for name, stock in raw_materials.items():
         min_stock = material_map.get(name, 0)
 
         if stock < min_stock:
             st.warning(f"{name} is low: {stock} (Min: {min_stock})")
-            low_stock_found = True
+            low_found = True
 
-    if not low_stock_found:
+    if not low_found:
         st.success("All materials are sufficiently stocked")
 
     st.divider()
@@ -90,9 +105,8 @@ def show_dashboard():
         st.info("No usage data")
 
     # PRODUCTION
-    prod_data = get_weekly_production()
-    if prod_data:
-        df = pd.DataFrame(prod_data, columns=["week", "product", "qty"])
+    if production_data:
+        df = pd.DataFrame(production_data, columns=["week", "product", "qty"])
         df = df.groupby("week")["qty"].sum().reset_index()
 
         st.markdown("### Production")
@@ -101,7 +115,6 @@ def show_dashboard():
         st.info("No production data")
 
     # DISPATCH
-    dispatch_data = get_weekly_dispatch()
     if dispatch_data:
         df = pd.DataFrame(dispatch_data, columns=["week", "product", "qty"])
         df = df.groupby("week")["qty"].sum().reset_index()

@@ -10,6 +10,7 @@ from ui.dashboard import show_dashboard
 from ui.products import show_products
 from ui.bom import show_bom
 from ui.production import show_production
+from ui.transactions import show_transactions
 
 
 # -----------------------------
@@ -38,7 +39,8 @@ menu = st.sidebar.selectbox(
         "Stock Entry",
         "Products",
         "BOM",
-        "Production"
+        "Production",
+        "Transactions"
     ]
 )
 
@@ -63,3 +65,6 @@ elif menu == "BOM":
 
 elif menu == "Production":
     show_production()
+
+elif menu == "Transactions":
+    show_transactions()

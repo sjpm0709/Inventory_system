@@ -21,6 +21,18 @@ def show_materials():
     materials = get_materials()
 
     for m in materials:
-        # m = (id, name, unit, min_stock)
-        min_stock = m[3] if len(m) > 3 else 50
-        st.write(f"{m[1]} ({m[2]}) → Min Stock: {min_stock}")
+        material_id, name, unit, min_stock = m
+
+        col1, col2 = st.columns([4, 1])
+
+        with col1:
+           st.write(f"{name} ({unit}) → Min Stock: {min_stock}")
+
+        with col2:
+           if st.button("Delete", key=f"del_mat_{material_id}"):
+            try:
+                delete_material(material_id)
+                st.success("Deleted successfully")
+                st.rerun()
+            except Exception as e:
+                st.error(str(e))

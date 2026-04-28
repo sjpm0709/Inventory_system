@@ -18,7 +18,7 @@ def show_dashboard():
     # ---------------------------
     # KPI CALCULATIONS
     # ---------------------------
-    total_raw_units = sum(raw_materials.values())
+    
     total_finished_stock = sum(finished_goods.values())
 
     # analytics totals
